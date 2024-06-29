@@ -1,7 +1,5 @@
-use bevy::{
-    prelude::*,
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
-};
+use bevy::prelude::*;
+use std::f32::consts::PI;
 
 #[derive(Debug, Resource)]
 struct Settings {
@@ -12,25 +10,21 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .insert_resource(Settings { amount: 100 })
-        .add_systems(Startup, setup)
+        .add_systems(Startup, (setup_camera, setup_map))
         .run();
 }
 
-fn setup(mut commands: Commands, settings: Res<Settings>, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<ColorMaterial>>) {
-    commands.spawn(Camera2dBundle::default());
-    for i in 0..settings.amount {
-        // spawn white triangle
-        let color = Color::WHITE;
-        let shape = Mesh2dHandle(meshes.add(Triangle2d::new(
-            Vec2::new(10.0, 10.0),
-            Vec2::new(-10.0, 10.0),
-            Vec2::new(0.0, -10.0),
-        )));
-        commands.spawn(MaterialMesh2dBundle {
-            mesh: shape,
-            material: materials.add(color),
-            transform: Transform::from_xyz(i as f32, 0f32, 0f32),
-            ..Default::default()
-        });
-    }
+fn setup_camera(mut commands: Commands, settings: Res<Settings>, asset_server: Res<AssetServer>) {
+    commands.spawn(Camera3dBundle {
+        transform: Transform::from_translation(Vec3::new(10.0, 10.0, 10.0))
+            .looking_at(Vec3::default(), Vec3::Y),
+        ..Default::default()
+    });
+}
+
+fn setup_map(mut commands: Commands, settings: Res<Settings>, asset_server: Res<AssetServer>) {
+    commands.spawn(SceneBundle {
+        scene: asset_server.load("models/maps/map0.glb#Scene0"),
+        ..default()
+    });
 }
